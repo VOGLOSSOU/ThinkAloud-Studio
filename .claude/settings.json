@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /home/nathan-voglossou/ThinkAloudApp -name \"*.pdf\" 2>/dev/null; find /home/nathan-voglossou -maxdepth 3 -name \"*.pdf\" 2>/dev/null)",
+      "Read(//home/nathan-voglossou/**)"
+    ]
+  }
+}
