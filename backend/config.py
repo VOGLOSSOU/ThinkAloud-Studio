@@ -7,6 +7,7 @@ load_dotenv()
 DATA_DIR = Path(os.getenv("THINKALOUD_DATA_DIR", "~/thinkaloud")).expanduser()
 EPISODES_DIR = DATA_DIR / "episodes"
 TEMPLATES_DIR = DATA_DIR / "templates"
+MUSIC_DIR = DATA_DIR / "music"
 DB_PATH = DATA_DIR / "thinkaloud.db"
 
 AUDIO_SAMPLE_RATE = int(os.getenv("AUDIO_SAMPLE_RATE", "48000"))
@@ -18,3 +19,4 @@ def ensure_dirs():
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     EPISODES_DIR.mkdir(parents=True, exist_ok=True)
     TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
+    MUSIC_DIR.mkdir(parents=True, exist_ok=True)

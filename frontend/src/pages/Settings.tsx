@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Save } from "lucide-react";
+import { Save, Music, Trash2, Upload } from "lucide-react";
 import toast from "react-hot-toast";
-import { settingsApi, recordingApi } from "@/api/client";
+import { settingsApi, recordingApi, musicApi } from "@/api/client";
 import type { AudioDevice } from "@/types";
 
+interface MusicTrack { filename: string; size_bytes: number; }
+
 export default function Settings() {
+  const queryClient = useQueryClient();
   const { data: settings, isLoading } = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get });
   const { data: devices = [] } = useQuery<AudioDevice[]>({ queryKey: ["devices"], queryFn: recordingApi.devices });
+  const { data: tracks = [] } = useQuery<MusicTrack[]>({ queryKey: ["music"], queryFn: musicApi.list });
 
   const [form, setForm] = useState<Record<string, unknown>>({});
 
@@ -20,6 +24,21 @@ export default function Settings() {
     mutationFn: () => settingsApi.update(form),
     onSuccess: () => toast.success("Paramètres sauvegardés"),
     onError: () => toast.error("Erreur lors de la sauvegarde"),
+  });
+
+  const uploadMusicMutation = useMutation({
+    mutationFn: (file: File) => musicApi.upload(file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["music"] });
+      toast.success("Piste importée");
+    },
+    onError: () => toast.error("Erreur lors de l'import"),
+  });
+
+  const deleteMusicMutation = useMutation({
+    mutationFn: (filename: string) => musicApi.delete(filename),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["music"] }),
+    onError: () => toast.error("Erreur lors de la suppression"),
   });
 
   function updateAudio(key: string, value: unknown) {
@@ -126,6 +145,50 @@ export default function Settings() {
                 onChange={(e) => updateExport("export_dir", e.target.value)}
               />
             </div>
+          </section>
+
+          {/* ── Musique de fond ── */}
+          <section className="card space-y-4">
+            <h2 className="font-lora text-blanc-brume text-base border-b border-gris-studio pb-2">
+              Musique de fond
+            </h2>
+            <p className="text-xs text-gris-cendre">
+              Pistes disponibles pour le mix à l'export. Utilisez des fichiers libres de droits.
+            </p>
+
+            {tracks.length > 0 && (
+              <div className="space-y-2">
+                {tracks.map((t) => (
+                  <div key={t.filename} className="flex items-center justify-between px-3 py-2 rounded-card bg-gris-studio/50 border border-gris-studio">
+                    <div className="flex items-center gap-2">
+                      <Music size={12} className="text-or" />
+                      <span className="font-mono text-xs text-blanc-brume truncate max-w-[220px]">{t.filename}</span>
+                      <span className="text-xs text-gris-cendre font-mono">{(t.size_bytes / 1_000_000).toFixed(1)} Mo</span>
+                    </div>
+                    <button
+                      onClick={() => deleteMusicMutation.mutate(t.filename)}
+                      className="p-1 text-gris-cendre hover:text-red-400 transition-colors"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <label className="btn-ghost flex items-center gap-2 text-xs cursor-pointer w-fit">
+              <Upload size={13} />
+              Importer une piste piano
+              <input
+                type="file"
+                accept="audio/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) uploadMusicMutation.mutate(file);
+                }}
+              />
+            </label>
           </section>
 
           <button

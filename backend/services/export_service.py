@@ -15,7 +15,13 @@ FFMPEG_FORMATS: dict[AudioFormat, dict] = {
 }
 
 
-def export_audio(wav_path: Path, exports_dir: Path, fmt: AudioFormat) -> dict:
+def export_audio(
+    wav_path: Path,
+    exports_dir: Path,
+    fmt: AudioFormat,
+    music_path: Path | None = None,
+    music_volume: float = 0.12,
+) -> dict:
     if not wav_path.exists():
         raise FileNotFoundError(f"Fichier audio source introuvable : {wav_path}")
 
@@ -23,7 +29,19 @@ def export_audio(wav_path: Path, exports_dir: Path, fmt: AudioFormat) -> dict:
     spec = FFMPEG_FORMATS[fmt]
     out_path = exports_dir / f"audio.{spec['ext']}"
 
-    cmd = ["ffmpeg", "-y", "-i", str(wav_path)]
+    use_music = music_path and music_path.exists()
+
+    if use_music:
+        cmd = [
+            "ffmpeg", "-y",
+            "-i", str(wav_path),
+            "-stream_loop", "-1", "-i", str(music_path),
+            "-filter_complex",
+            f"[1:a]volume={music_volume}[music];[0:a][music]amix=inputs=2:duration=first:dropout_transition=3[out]",
+            "-map", "[out]",
+        ]
+    else:
+        cmd = ["ffmpeg", "-y", "-i", str(wav_path)]
 
     if spec.get("bitrate"):
         cmd += ["-c:a", spec["codec"], "-b:a", spec["bitrate"]]
@@ -42,5 +60,6 @@ def export_audio(wav_path: Path, exports_dir: Path, fmt: AudioFormat) -> dict:
         "format": fmt,
         "path": str(out_path),
         "size_bytes": out_path.stat().st_size,
+        "music": music_path.name if use_music else None,
         "exported_at": datetime.utcnow().isoformat(),
     }

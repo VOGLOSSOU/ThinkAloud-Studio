@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Annotated
 from models import Episode, EpisodeStatus
 from database import get_session
-from config import EPISODES_DIR
+from config import EPISODES_DIR, MUSIC_DIR
 from services.export_service import export_audio, AudioFormat
 from services.video_service import generate_youtube_video
 
@@ -18,6 +18,8 @@ router = APIRouter(prefix="/export", tags=["export"])
 def export_audio_route(
     episode_id: str,
     formats: list[AudioFormat],
+    music_file: str | None = None,
+    music_volume: float = 0.12,
     session: Session = Depends(get_session),
 ):
     episode = session.get(Episode, episode_id)
@@ -26,10 +28,11 @@ def export_audio_route(
 
     wav_path = Path(episode.audio_path)
     exports_dir = EPISODES_DIR / episode_id / "exports"
+    music_path = (MUSIC_DIR / music_file) if music_file else None
     results = []
     for fmt in formats:
         try:
-            info = export_audio(wav_path, exports_dir, fmt)
+            info = export_audio(wav_path, exports_dir, fmt, music_path=music_path, music_volume=music_volume)
             results.append(info)
         except Exception as e:
             results.append({"format": fmt, "error": str(e)})
@@ -50,6 +53,8 @@ def export_audio_route(
 @router.post("/{episode_id}/video")
 def export_video_route(
     episode_id: str,
+    music_file: str | None = None,
+    music_volume: float = 0.12,
     session: Session = Depends(get_session),
 ):
     episode = session.get(Episode, episode_id)
@@ -61,9 +66,10 @@ def export_video_route(
     wav_path = Path(episode.audio_path)
     cover_path = Path(episode.cover_path)
     exports_dir = EPISODES_DIR / episode_id / "exports"
+    music_path = (MUSIC_DIR / music_file) if music_file else None
 
     try:
-        info = generate_youtube_video(wav_path, cover_path, exports_dir)
+        info = generate_youtube_video(wav_path, cover_path, exports_dir, music_path=music_path, music_volume=music_volume)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

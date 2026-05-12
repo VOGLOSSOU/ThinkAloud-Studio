@@ -25,10 +25,14 @@ export const recordingApi = {
 };
 
 export const exportApi = {
-  audio: (episodeId: string, formats: string[]) =>
-    api.post(`/export/${episodeId}/audio`, formats).then((r) => r.data),
-  video: (episodeId: string) =>
-    api.post(`/export/${episodeId}/video`).then((r) => r.data),
+  audio: (episodeId: string, formats: string[], musicFile?: string, musicVolume = 0.12) =>
+    api.post(`/export/${episodeId}/audio`, formats, {
+      params: { music_file: musicFile, music_volume: musicVolume },
+    }).then((r) => r.data),
+  video: (episodeId: string, musicFile?: string, musicVolume = 0.12) =>
+    api.post(`/export/${episodeId}/video`, null, {
+      params: { music_file: musicFile, music_volume: musicVolume },
+    }).then((r) => r.data),
   uploadCover: (episodeId: string, file: File, coverType = "cover") => {
     const form = new FormData();
     form.append("file", file);
@@ -44,4 +48,15 @@ export const exportApi = {
 export const settingsApi = {
   get: () => api.get("/settings/").then((r) => r.data),
   update: (data: Record<string, unknown>) => api.put("/settings/", data).then((r) => r.data),
+};
+
+export const musicApi = {
+  list: () => api.get("/music/").then((r) => r.data),
+  upload: (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return api.post("/music/upload", form, { headers: { "Content-Type": "multipart/form-data" } }).then((r) => r.data);
+  },
+  delete: (filename: string) => api.delete(`/music/${filename}`).then((r) => r.data),
+  fileUrl: (filename: string) => `/api/music/file/${filename}`,
 };
