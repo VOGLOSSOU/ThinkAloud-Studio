@@ -18,6 +18,7 @@ router = APIRouter(prefix="/export", tags=["export"])
 def export_audio_route(
     episode_id: str,
     formats: list[AudioFormat],
+    voice_processing: bool = True,
     session: Session = Depends(get_session),
 ):
     episode = session.get(Episode, episode_id)
@@ -29,7 +30,7 @@ def export_audio_route(
     results = []
     for fmt in formats:
         try:
-            info = export_audio(wav_path, exports_dir, fmt)
+            info = export_audio(wav_path, exports_dir, fmt, voice_processing=voice_processing)
             results.append(info)
         except Exception as e:
             results.append({"format": fmt, "error": str(e)})
@@ -48,7 +49,11 @@ def export_audio_route(
 
 
 @router.post("/{episode_id}/video")
-def export_video_route(episode_id: str, session: Session = Depends(get_session)):
+def export_video_route(
+    episode_id: str,
+    voice_processing: bool = True,
+    session: Session = Depends(get_session),
+):
     episode = session.get(Episode, episode_id)
     if not episode or not episode.audio_path:
         raise HTTPException(status_code=404, detail="Audio introuvable")
@@ -61,7 +66,10 @@ def export_video_route(episode_id: str, session: Session = Depends(get_session))
     exports_dir = EPISODES_DIR / episode_id / "exports"
 
     try:
-        info = generate_youtube_video(wav_path, cover_path, thumbnail_path, exports_dir)
+        info = generate_youtube_video(
+            wav_path, cover_path, thumbnail_path, exports_dir,
+            voice_processing=voice_processing,
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

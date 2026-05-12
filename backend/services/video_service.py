@@ -2,6 +2,7 @@ import subprocess
 from pathlib import Path
 from datetime import datetime
 from config import VIDEO_CRF
+from services.export_service import VOICE_FILTER
 
 
 def generate_youtube_video(
@@ -9,6 +10,7 @@ def generate_youtube_video(
     cover_path: Path,
     thumbnail_path: Path,
     exports_dir: Path,
+    voice_processing: bool = True,
 ) -> dict:
     if not wav_path.exists():
         raise FileNotFoundError(f"Audio introuvable : {wav_path}")
@@ -32,8 +34,12 @@ def generate_youtube_video(
         "-pix_fmt", "yuv420p",
         "-shortest",
         "-movflags", "+faststart",
-        str(out_path),
     ]
+
+    if voice_processing:
+        cmd += ["-af", VOICE_FILTER]
+
+    cmd.append(str(out_path))
 
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
@@ -43,5 +49,6 @@ def generate_youtube_video(
         "format": "mp4",
         "path": str(out_path),
         "size_bytes": out_path.stat().st_size,
+        "voice_processing": voice_processing,
         "exported_at": datetime.utcnow().isoformat(),
     }
