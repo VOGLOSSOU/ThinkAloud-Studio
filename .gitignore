@@ -3,3 +3,21 @@
 /claude
 
 .claude
+
+/claude/
+
+/.claude/
+
+/.claude
+
+.gitignore
+
+.env
+
+./build
+
+/.build
+
+/build
+
+/dist
