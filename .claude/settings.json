@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(find /home/nathan-voglossou/ThinkAloudApp -name \"*.pdf\" 2>/dev/null; find /home/nathan-voglossou -maxdepth 3 -name \"*.pdf\" 2>/dev/null)",
-      "Read(//home/nathan-voglossou/**)"
+      "Read(//home/nathan-voglossou/**)",
+      "Bash(npm create *)",
+      "Bash(npx create-vite@latest . --template react-ts)",
+      "Bash(npm init *)",
+      "Bash(chmod +x /home/nathan-voglossou/ThinkAloudApp/install.sh /home/nathan-voglossou/ThinkAloudApp/start.sh)"
     ]
   }
 }
