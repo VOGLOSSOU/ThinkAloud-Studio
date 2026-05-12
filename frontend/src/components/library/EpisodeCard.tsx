@@ -1,6 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { Clock } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Clock, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 import type { Episode } from "@/types";
+import { episodesApi } from "@/api/client";
 import clsx from "clsx";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -26,7 +29,24 @@ interface EpisodeCardProps {
 
 export default function EpisodeCard({ episode }: EpisodeCardProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const status = STATUS_LABELS[episode.status] ?? STATUS_LABELS.draft;
+
+  const deleteMutation = useMutation({
+    mutationFn: () => episodesApi.delete(episode.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["episodes"] });
+      toast.success("Épisode supprimé");
+    },
+    onError: () => toast.error("Erreur lors de la suppression"),
+  });
+
+  function handleDelete(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (confirm(`Supprimer "${episode.title}" ? Cette action est irréversible.`)) {
+      deleteMutation.mutate();
+    }
+  }
 
   return (
     <div
@@ -62,6 +82,18 @@ export default function EpisodeCard({ episode }: EpisodeCardProps) {
           <span className="text-xs text-gris-cendre font-mono">{formatDate(episode.created_at)}</span>
         </div>
       </div>
+
+      {/* Icône delete — visible au hover de la card */}
+      <button
+        onClick={handleDelete}
+        disabled={deleteMutation.isPending}
+        className="self-center opacity-0 group-hover:opacity-100 transition-opacity duration-200
+          p-1.5 rounded text-gris-cendre hover:text-red-400 hover:bg-red-400/10
+          disabled:opacity-30 flex-shrink-0"
+        title="Supprimer"
+      >
+        <Trash2 size={14} />
+      </button>
     </div>
   );
 }
