@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Download, Video, Music, CheckCircle, AlertCircle, Music2 } from "lucide-react";
+import { Download, Video, Music, CheckCircle, AlertCircle, Music2, Play, Pause } from "lucide-react";
 import toast from "react-hot-toast";
 import { exportApi, musicApi } from "@/api/client";
 import type { Episode } from "@/types";
@@ -27,6 +27,21 @@ export default function ExportPanel({ episode }: ExportPanelProps) {
   const [musicEnabled, setMusicEnabled] = useState(false);
   const [selectedTrack, setSelectedTrack] = useState<string | undefined>();
   const [musicVolume, setMusicVolume] = useState(0.12);
+  const [playingTrack, setPlayingTrack] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  function togglePlay(filename: string) {
+    if (playingTrack === filename) {
+      audioRef.current?.pause();
+      setPlayingTrack(null);
+    } else {
+      audioRef.current?.pause();
+      audioRef.current = new Audio(musicApi.fileUrl(filename));
+      audioRef.current.play();
+      audioRef.current.onended = () => setPlayingTrack(null);
+      setPlayingTrack(filename);
+    }
+  }
   const exportedFormats = new Set((episode.exports ?? []).map((e) => e.format));
 
   const { data: tracks = [] } = useQuery<MusicTrack[]>({
@@ -120,25 +135,34 @@ export default function ExportPanel({ episode }: ExportPanelProps) {
               ) : (
                 <div className="space-y-1">
                   {tracks.map((t) => (
-                    <button
+                    <div
                       key={t.filename}
-                      onClick={() => setSelectedTrack(t.filename)}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-card border text-left transition-all duration-150 ${
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-card border transition-all duration-150 ${
                         selectedTrack === t.filename
                           ? "border-or bg-or/10"
-                          : "border-gris-studio bg-gris-nuit hover:border-gris-cendre/40"
+                          : "border-gris-studio bg-gris-nuit"
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <Music size={11} className="text-or" />
-                        <span className="font-mono text-xs text-blanc-brume truncate max-w-[180px]">
+                      <button
+                        onClick={() => setSelectedTrack(t.filename)}
+                        className="flex items-center gap-2 flex-1 min-w-0 text-left"
+                      >
+                        <Music size={11} className="text-or flex-shrink-0" />
+                        <span className="font-mono text-xs text-blanc-brume truncate">
                           {t.filename}
                         </span>
-                      </div>
-                      <span className="text-xs text-gris-cendre font-mono flex-shrink-0">
-                        {(t.size_bytes / 1_000_000).toFixed(1)} Mo
-                      </span>
-                    </button>
+                        <span className="text-xs text-gris-cendre font-mono flex-shrink-0">
+                          {(t.size_bytes / 1_000_000).toFixed(1)} Mo
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => togglePlay(t.filename)}
+                        className="p-1.5 ml-2 rounded text-gris-cendre hover:text-or hover:bg-or/10 transition-colors flex-shrink-0"
+                        title={playingTrack === t.filename ? "Pause" : "Écouter"}
+                      >
+                        {playingTrack === t.filename ? <Pause size={12} /> : <Play size={12} />}
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}

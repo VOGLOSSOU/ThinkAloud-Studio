@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Save, Music, Trash2, Upload } from "lucide-react";
+import { Save, Music, Trash2, Upload, Play, Pause } from "lucide-react";
 import toast from "react-hot-toast";
 import { settingsApi, recordingApi, musicApi } from "@/api/client";
 import type { AudioDevice } from "@/types";
@@ -15,6 +15,8 @@ export default function Settings() {
   const { data: tracks = [] } = useQuery<MusicTrack[]>({ queryKey: ["music"], queryFn: musicApi.list });
 
   const [form, setForm] = useState<Record<string, unknown>>({});
+  const [playingTrack, setPlayingTrack] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (settings) setForm(settings);
@@ -40,6 +42,19 @@ export default function Settings() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["music"] }),
     onError: () => toast.error("Erreur lors de la suppression"),
   });
+
+  function togglePlay(filename: string) {
+    if (playingTrack === filename) {
+      audioRef.current?.pause();
+      setPlayingTrack(null);
+    } else {
+      audioRef.current?.pause();
+      audioRef.current = new Audio(musicApi.fileUrl(filename));
+      audioRef.current.play();
+      audioRef.current.onended = () => setPlayingTrack(null);
+      setPlayingTrack(filename);
+    }
+  }
 
   function updateAudio(key: string, value: unknown) {
     setForm((f) => ({ ...f, audio: { ...(f.audio as object), [key]: value } }));
@@ -160,17 +175,27 @@ export default function Settings() {
               <div className="space-y-2">
                 {tracks.map((t) => (
                   <div key={t.filename} className="flex items-center justify-between px-3 py-2 rounded-card bg-gris-studio/50 border border-gris-studio">
-                    <div className="flex items-center gap-2">
-                      <Music size={12} className="text-or" />
-                      <span className="font-mono text-xs text-blanc-brume truncate max-w-[220px]">{t.filename}</span>
-                      <span className="text-xs text-gris-cendre font-mono">{(t.size_bytes / 1_000_000).toFixed(1)} Mo</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Music size={12} className="text-or flex-shrink-0" />
+                      <span className="font-mono text-xs text-blanc-brume truncate max-w-[180px]">{t.filename}</span>
+                      <span className="text-xs text-gris-cendre font-mono flex-shrink-0">{(t.size_bytes / 1_000_000).toFixed(1)} Mo</span>
                     </div>
-                    <button
-                      onClick={() => deleteMusicMutation.mutate(t.filename)}
-                      className="p-1 text-gris-cendre hover:text-red-400 transition-colors"
-                    >
-                      <Trash2 size={13} />
-                    </button>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        onClick={() => togglePlay(t.filename)}
+                        className="p-1.5 rounded text-gris-cendre hover:text-or hover:bg-or/10 transition-colors"
+                        title={playingTrack === t.filename ? "Pause" : "Écouter"}
+                      >
+                        {playingTrack === t.filename ? <Pause size={13} /> : <Play size={13} />}
+                      </button>
+                      <button
+                        onClick={() => deleteMusicMutation.mutate(t.filename)}
+                        className="p-1.5 rounded text-gris-cendre hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                        title="Supprimer"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

@@ -28,7 +28,7 @@ def generate_youtube_video(
             "-i", str(wav_path),
             "-stream_loop", "-1", "-i", str(music_path),
             "-filter_complex",
-            f"[2:a]volume={music_volume}[music];[1:a][music]amix=inputs=2:duration=first:dropout_transition=3[audio]",
+            f"[2:a]volume={music_volume}[music];[1:a][music]amix=inputs=2:duration=first:dropout_transition=3:normalize=0[audio]",
             "-map", "0:v",
             "-map", "[audio]",
         ]

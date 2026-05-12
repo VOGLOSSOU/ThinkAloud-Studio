@@ -3,7 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from database import create_db
 from routers import episodes, recording, export, settings, music
-from config import EPISODES_DIR, ensure_dirs
+from config import EPISODES_DIR, MUSIC_DIR, ensure_dirs
+
+def _seed_music():
+    from generate_music import generate_default_tracks
+    try:
+        generate_default_tracks(MUSIC_DIR)
+    except Exception as e:
+        print(f"[music] Génération ignorée : {e}")
 
 app = FastAPI(title="ThinkAloud Studio API", version="1.0.0")
 
@@ -28,6 +35,7 @@ app.mount("/media", StaticFiles(directory=str(EPISODES_DIR)), name="media")
 def on_startup():
     ensure_dirs()
     create_db()
+    _seed_music()
 
 
 @app.get("/health")

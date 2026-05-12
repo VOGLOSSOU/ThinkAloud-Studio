@@ -37,7 +37,7 @@ def export_audio(
             "-i", str(wav_path),
             "-stream_loop", "-1", "-i", str(music_path),
             "-filter_complex",
-            f"[1:a]volume={music_volume}[music];[0:a][music]amix=inputs=2:duration=first:dropout_transition=3[out]",
+            f"[1:a]volume={music_volume}[music];[0:a][music]amix=inputs=2:duration=first:dropout_transition=3:normalize=0[out]",
             "-map", "[out]",
         ]
     else:
