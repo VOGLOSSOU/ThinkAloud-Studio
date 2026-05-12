@@ -49,11 +49,9 @@ export default function Recorder({ episode, onRecorded }: RecorderProps) {
         normalize: true,
         interact: true,
       });
-      wavesurfer.current.load(`/api/media/${episode.id}/master.wav`);
+      wavesurfer.current.load(`/api/media/${episode.id}/master.wav?t=${Date.now()}`);
     }
-    return () => {
-      wavesurfer.current?.destroy();
-    };
+    return () => { wavesurfer.current?.destroy(); };
   }, [episode.audio_path, episode.id]);
 
   const startMutation = useMutation({
