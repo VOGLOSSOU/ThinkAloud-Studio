@@ -32,12 +32,8 @@ def generate_youtube_video(
         "-pix_fmt", "yuv420p",
         "-shortest",
         "-movflags", "+faststart",
+        str(out_path),
     ]
-
-    if thumbnail_path.exists():
-        cmd += ["-attach", str(thumbnail_path), "-metadata:s:t", "mimetype=image/png"]
-
-    cmd.append(str(out_path))
 
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:

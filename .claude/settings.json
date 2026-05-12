@@ -10,7 +10,8 @@
       "Bash(mkdir -p /home/nathan-voglossou/ThinkAloudApp/frontend/public)",
       "Bash(cp /home/nathan-voglossou/ThinkAloudApp/logo-thinkaloud.png /home/nathan-voglossou/ThinkAloudApp/frontend/public/logo.png)",
       "Bash(cp \"/home/nathan-voglossou/ThinkAloudApp/ChatGPT Image 12 mai 2026, 16_59_05.png\" /home/nathan-voglossou/ThinkAloudApp/frontend/public/banner.png)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(ffmpeg -y -loop 1 -i ~/thinkaloud/episodes/d4d534a9-d9ee-44bb-be12-f5c2fd819eee/cover.png -i ~/thinkaloud/episodes/d4d534a9-d9ee-44bb-be12-f5c2fd819eee/master.wav -c:v libx264 -tune stillimage -crf 23 -vf 'scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:\\(ow-iw\\)/2:\\(oh-ih\\)/2:black' -c:a aac -b:a 256k -pix_fmt yuv420p -shortest -movflags +faststart -attach ~/thinkaloud/episodes/d4d534a9-d9ee-44bb-be12-f5c2fd819eee/thumbnail.png -metadata:s:t mimetype=image/png /tmp/test_video.mp4)"
     ]
   }
 }
