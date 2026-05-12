@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Download, Video, Music, CheckCircle, AlertCircle, Wand2 } from "lucide-react";
+import { Download, Video, Music, CheckCircle, AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { exportApi } from "@/api/client";
 import type { Episode } from "@/types";
@@ -22,11 +22,10 @@ interface ExportPanelProps {
 export default function ExportPanel({ episode }: ExportPanelProps) {
   const queryClient = useQueryClient();
   const [selectedFormats, setSelectedFormats] = useState<string[]>(["mp3", "wav"]);
-  const [voiceProcessing, setVoiceProcessing] = useState(true);
   const exportedFormats = new Set((episode.exports ?? []).map((e) => e.format));
 
   const audioMutation = useMutation({
-    mutationFn: () => exportApi.audio(episode.id, selectedFormats, voiceProcessing),
+    mutationFn: () => exportApi.audio(episode.id, selectedFormats),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["episodes", episode.id] });
       toast.success("Export audio terminé");
@@ -35,7 +34,7 @@ export default function ExportPanel({ episode }: ExportPanelProps) {
   });
 
   const videoMutation = useMutation({
-    mutationFn: () => exportApi.video(episode.id, voiceProcessing),
+    mutationFn: () => exportApi.video(episode.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["episodes", episode.id] });
       toast.success("Vidéo YouTube générée");
@@ -52,48 +51,6 @@ export default function ExportPanel({ episode }: ExportPanelProps) {
 
   return (
     <div className="space-y-6">
-
-      {/* ── Traitement voix ── */}
-      <section className="card space-y-3">
-        <button
-          onClick={() => setVoiceProcessing((v) => !v)}
-          className="flex items-center justify-between w-full"
-        >
-          <div className="flex items-center gap-2">
-            <Wand2 size={15} className={voiceProcessing ? "text-or" : "text-gris-cendre"} />
-            <div className="text-left">
-              <span className={`font-lora text-sm ${voiceProcessing ? "text-blanc-brume" : "text-gris-cendre"}`}>
-                Traitement voix
-              </span>
-              <p className="text-xs text-gris-cendre mt-0.5">
-                Compression · Présence · Normalisation -16 LUFS
-              </p>
-            </div>
-          </div>
-          <div className={`w-10 h-5 rounded-full transition-colors duration-200 flex items-center px-0.5 ${
-            voiceProcessing ? "bg-or" : "bg-gris-studio"
-          }`}>
-            <div className={`w-4 h-4 rounded-full bg-blanc-brume shadow transition-transform duration-200 ${
-              voiceProcessing ? "translate-x-5" : "translate-x-0"
-            }`} />
-          </div>
-        </button>
-
-        {voiceProcessing && (
-          <div className="grid grid-cols-3 gap-2 pt-1">
-            {[
-              { label: "Highpass 80Hz",    desc: "Supprime les grondements" },
-              { label: "Compression 3:1",  desc: "Pose et stabilise la voix" },
-              { label: "Loudnorm −16 LUFS", desc: "Standard YouTube / Spotify" },
-            ].map((step) => (
-              <div key={step.label} className="bg-gris-studio/50 rounded-card p-2">
-                <p className="font-mono text-xs text-or">{step.label}</p>
-                <p className="text-xs text-gris-cendre mt-0.5">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
 
       <section className="card space-y-4">
         <div className="flex items-center gap-2 border-b border-gris-studio pb-2">

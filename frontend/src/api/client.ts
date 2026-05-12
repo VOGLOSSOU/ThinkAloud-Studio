@@ -25,10 +25,10 @@ export const recordingApi = {
 };
 
 export const exportApi = {
-  audio: (episodeId: string, formats: string[], voiceProcessing = true) =>
-    api.post(`/export/${episodeId}/audio`, formats, { params: { voice_processing: voiceProcessing } }).then((r) => r.data),
-  video: (episodeId: string, voiceProcessing = true) =>
-    api.post(`/export/${episodeId}/video`, null, { params: { voice_processing: voiceProcessing } }).then((r) => r.data),
+  audio: (episodeId: string, formats: string[]) =>
+    api.post(`/export/${episodeId}/audio`, formats).then((r) => r.data),
+  video: (episodeId: string) =>
+    api.post(`/export/${episodeId}/video`).then((r) => r.data),
   uploadCover: (episodeId: string, file: File, coverType = "cover") => {
     const form = new FormData();
     form.append("file", file);

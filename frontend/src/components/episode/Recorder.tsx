@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Mic, Square, Pause, Play, RotateCcw } from "lucide-react";
+import { Mic, Square, Pause, Play, RotateCcw, Volume2 } from "lucide-react";
 import toast from "react-hot-toast";
 import WaveSurfer from "wavesurfer.js";
 import { recordingApi } from "@/api/client";
@@ -28,6 +28,9 @@ export default function Recorder({ episode, onRecorded }: RecorderProps) {
   const [duration, setDuration] = useState(0);
   const [selectedDevice, setSelectedDevice] = useState<number | undefined>(undefined);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+  const [volume, setVolume] = useState(2);
 
   const { data: devices = [] } = useQuery<AudioDevice[]>({
     queryKey: ["devices"],
@@ -37,6 +40,8 @@ export default function Recorder({ episode, onRecorded }: RecorderProps) {
   useEffect(() => {
     if (episode.audio_path && waveRef.current) {
       wavesurfer.current?.destroy();
+      audioCtxRef.current?.close();
+
       wavesurfer.current = WaveSurfer.create({
         container: waveRef.current,
         waveColor: "#2E2E2E",
@@ -49,9 +54,27 @@ export default function Recorder({ episode, onRecorded }: RecorderProps) {
         normalize: true,
         interact: true,
       });
+
+      // GainNode Web Audio API — permet un boost au-delà de 1.0
+      wavesurfer.current.on("ready", () => {
+        try {
+          const ctx = new AudioContext();
+          const source = ctx.createMediaElementSource(wavesurfer.current!.getMediaElement());
+          const gain = ctx.createGain();
+          gain.gain.value = 2;
+          source.connect(gain);
+          gain.connect(ctx.destination);
+          audioCtxRef.current = ctx;
+          gainNodeRef.current = gain;
+        } catch { /* ignore */ }
+      });
+
       wavesurfer.current.load(`/api/media/${episode.id}/master.wav?t=${Date.now()}`);
     }
-    return () => { wavesurfer.current?.destroy(); };
+    return () => {
+      wavesurfer.current?.destroy();
+      audioCtxRef.current?.close();
+    };
   }, [episode.audio_path, episode.id]);
 
   const startMutation = useMutation({
@@ -176,20 +199,38 @@ export default function Recorder({ episode, onRecorded }: RecorderProps) {
             </span>
           </div>
           <div ref={waveRef} className="w-full" />
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => wavesurfer.current?.playPause()}
-              className="btn-ghost flex items-center gap-2 text-xs"
-            >
-              <Play size={13} /> Lecture
-            </button>
-            <button
-              onClick={() => startMutation.mutate()}
-              disabled={isRecording || startMutation.isPending}
-              className="btn-ghost flex items-center gap-2 text-xs text-gris-cendre"
-            >
-              <RotateCcw size={13} /> Re-enregistrer
-            </button>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => wavesurfer.current?.playPause()}
+                className="btn-ghost flex items-center gap-2 text-xs"
+              >
+                <Play size={13} /> Lecture
+              </button>
+              <button
+                onClick={() => startMutation.mutate()}
+                disabled={isRecording || startMutation.isPending}
+                className="btn-ghost flex items-center gap-2 text-xs text-gris-cendre"
+              >
+                <RotateCcw size={13} /> Re-enregistrer
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <Volume2 size={13} className="text-gris-cendre flex-shrink-0" />
+              <input
+                type="range"
+                min={0}
+                max={3}
+                step={0.1}
+                value={volume}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  setVolume(v);
+                  if (gainNodeRef.current) gainNodeRef.current.gain.value = v;
+                }}
+                className="w-20 accent-or"
+              />
+            </div>
           </div>
         </div>
       )}

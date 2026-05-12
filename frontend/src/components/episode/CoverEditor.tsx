@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Canvas, FabricImage } from "fabric";
-import { Download, Upload, Image as ImageIcon, Sparkles, RefreshCw } from "lucide-react";
+import { Download, Upload, Image as ImageIcon, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 import clsx from "clsx";
 import { exportApi } from "@/api/client";
@@ -54,11 +54,11 @@ export default function CoverEditor({ episode, type }: CoverEditorProps) {
     setActiveTemplate(templateId);
   }
 
-  async function refreshCoverTitle() {
+  useEffect(() => {
     if (!activeTemplate) return;
-    await applyTemplate(activeTemplate);
-    toast.success("Titre mis à jour sur la cover");
-  }
+    const timer = setTimeout(() => applyTemplate(activeTemplate), 350);
+    return () => clearTimeout(timer);
+  }, [coverTitle]);
 
   function addImage(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -116,24 +116,13 @@ export default function CoverEditor({ episode, type }: CoverEditorProps) {
             Indépendant du titre YouTube.
           </p>
         </div>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            className="input-field flex-1"
-            value={coverTitle}
-            onChange={(e) => setCoverTitle(e.target.value)}
-            placeholder="Ex : C'est quoi le péché ?"
-            onKeyDown={(e) => e.key === "Enter" && refreshCoverTitle()}
-          />
-          <button
-            onClick={refreshCoverTitle}
-            disabled={!activeTemplate}
-            className="btn-primary flex items-center gap-1.5 whitespace-nowrap"
-          >
-            <RefreshCw size={13} />
-            Mettre à jour
-          </button>
-        </div>
+        <input
+          type="text"
+          className="input-field"
+          value={coverTitle}
+          onChange={(e) => setCoverTitle(e.target.value)}
+          placeholder="Ex : C'est quoi le péché ?"
+        />
         {coverTitle !== episode.title && (
           <p className="text-xs text-or/70 font-mono">≠ titre YouTube : "{episode.title}"</p>
         )}
