@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import clsx from "clsx";
 import { exportApi } from "@/api/client";
 import type { Episode } from "@/types";
-import { TEMPLATES } from "./templates";
+import { TEMPLATES, THUMBNAIL_TEMPLATES } from "./templates";
 
 interface CoverEditorProps {
   episode: Episode;
@@ -24,6 +24,8 @@ export default function CoverEditor({ episode, type }: CoverEditorProps) {
   const [coverTitle, setCoverTitle]           = useState(episode.title);
   const [activeTemplate, setActiveTemplate]   = useState<string | null>(null);
 
+  const defaultTemplate = type === "cover" ? "silence" : "thumb-scene";
+
   useEffect(() => {
     if (!canvasRef.current) return;
     const canvas = new Canvas(canvasRef.current, {
@@ -33,18 +35,18 @@ export default function CoverEditor({ episode, type }: CoverEditorProps) {
     });
     fabricRef.current = canvas;
 
-    if (type === "cover") {
-      applyTemplate("silence", canvas, coverTitle);
-      setActiveTemplate("silence");
-    }
+    applyTemplate(defaultTemplate, canvas, coverTitle);
+    setActiveTemplate(defaultTemplate);
 
     return () => { canvas.dispose(); };
   }, [episode.id, type]);
 
+  const activeTemplates = type === "cover" ? TEMPLATES : THUMBNAIL_TEMPLATES;
+
   async function applyTemplate(templateId: string, canvasOverride?: Canvas, titleOverride?: string) {
     const canvas = canvasOverride ?? fabricRef.current;
     if (!canvas) return;
-    const tpl = TEMPLATES.find((t) => t.id === templateId);
+    const tpl = activeTemplates.find((t) => t.id === templateId);
     if (!tpl) return;
     canvas.clear();
     canvas.backgroundColor = "#0A0A0A";
@@ -104,65 +106,63 @@ export default function CoverEditor({ episode, type }: CoverEditorProps) {
   return (
     <div className="space-y-5">
 
-      {/* ── Titre sur la cover ── */}
-      {type === "cover" && (
-        <div className="card space-y-2 border-or/20">
-          <div>
-            <label className="label mb-0">Titre sur la cover</label>
-            <p className="text-xs text-gris-cendre mt-0.5">
-              Indépendant du titre YouTube.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              className="input-field flex-1"
-              value={coverTitle}
-              onChange={(e) => setCoverTitle(e.target.value)}
-              placeholder="Ex : C'est quoi le péché ?"
-              onKeyDown={(e) => e.key === "Enter" && refreshCoverTitle()}
-            />
-            <button
-              onClick={refreshCoverTitle}
-              disabled={!activeTemplate}
-              className="btn-primary flex items-center gap-1.5 whitespace-nowrap"
-            >
-              <RefreshCw size={13} />
-              Mettre à jour
-            </button>
-          </div>
-          {coverTitle !== episode.title && (
-            <p className="text-xs text-or/70 font-mono">≠ titre YouTube : "{episode.title}"</p>
-          )}
+      {/* ── Titre sur la cover / miniature ── */}
+      <div className="card space-y-2 border-or/20">
+        <div>
+          <label className="label mb-0">
+            {type === "cover" ? "Titre sur la cover" : "Titre sur la miniature"}
+          </label>
+          <p className="text-xs text-gris-cendre mt-0.5">
+            Indépendant du titre YouTube.
+          </p>
         </div>
-      )}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            className="input-field flex-1"
+            value={coverTitle}
+            onChange={(e) => setCoverTitle(e.target.value)}
+            placeholder="Ex : C'est quoi le péché ?"
+            onKeyDown={(e) => e.key === "Enter" && refreshCoverTitle()}
+          />
+          <button
+            onClick={refreshCoverTitle}
+            disabled={!activeTemplate}
+            className="btn-primary flex items-center gap-1.5 whitespace-nowrap"
+          >
+            <RefreshCw size={13} />
+            Mettre à jour
+          </button>
+        </div>
+        {coverTitle !== episode.title && (
+          <p className="text-xs text-or/70 font-mono">≠ titre YouTube : "{episode.title}"</p>
+        )}
+      </div>
 
       {/* ── Sélecteur de templates ── */}
-      {type === "cover" && (
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Sparkles size={13} className="text-or" />
-            <label className="label mb-0">Templates</label>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {TEMPLATES.map((tpl) => (
-              <button
-                key={tpl.id}
-                onClick={() => applyTemplate(tpl.id)}
-                className={clsx(
-                  "flex flex-col items-start p-3 rounded-card border text-left transition-all duration-200",
-                  activeTemplate === tpl.id
-                    ? "border-or bg-or/10"
-                    : "border-gris-studio bg-gris-nuit hover:border-gris-cendre/40"
-                )}
-              >
-                <span className="font-lora text-xs text-blanc-brume">{tpl.label}</span>
-                <span className="text-xs text-gris-cendre mt-0.5 leading-tight">{tpl.desc}</span>
-              </button>
-            ))}
-          </div>
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Sparkles size={13} className="text-or" />
+          <label className="label mb-0">Templates</label>
         </div>
-      )}
+        <div className="grid grid-cols-2 gap-2">
+          {activeTemplates.map((tpl) => (
+            <button
+              key={tpl.id}
+              onClick={() => applyTemplate(tpl.id)}
+              className={clsx(
+                "flex flex-col items-start p-3 rounded-card border text-left transition-all duration-200",
+                activeTemplate === tpl.id
+                  ? "border-or bg-or/10"
+                  : "border-gris-studio bg-gris-nuit hover:border-gris-cendre/40"
+              )}
+            >
+              <span className="font-lora text-xs text-blanc-brume">{tpl.label}</span>
+              <span className="text-xs text-gris-cendre mt-0.5 leading-tight">{tpl.desc}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* ── Canvas ── */}
       <div className="space-y-2">
