@@ -69,7 +69,7 @@ export default function Settings() {
   if (isLoading) return <div className="p-8 text-gris-cendre font-mono text-sm">Chargement...</div>;
 
   return (
-    <div className="p-6 lg:p-8 max-w-2xl">
+    <div className="p-6 lg:p-8 w-full">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <h1 className="font-playfair text-3xl text-blanc-brume mb-6">Paramètres</h1>
 

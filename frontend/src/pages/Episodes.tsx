@@ -37,7 +37,7 @@ export default function Episodes() {
     .filter((e) => e.title.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="p-6 lg:p-8 max-w-4xl">
+    <div className="p-6 lg:p-8 w-full">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <div className="flex items-center justify-between mb-6">
           <h1 className="font-playfair text-3xl text-blanc-brume">Mes Épisodes</h1>

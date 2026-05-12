@@ -119,7 +119,7 @@ export default function EpisodePage() {
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.15 }}
-          className="max-w-2xl"
+          className="w-full"
         >
           {tab === "recording" && (
             <Recorder episode={episode} onRecorded={() => setTab("metadata")} />
