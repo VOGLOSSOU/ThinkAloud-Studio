@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Clock, Mic } from "lucide-react";
+import { Clock } from "lucide-react";
 import type { Episode } from "@/types";
 import clsx from "clsx";
 
@@ -41,7 +41,7 @@ export default function EpisodeCard({ episode }: EpisodeCardProps) {
             className="w-full h-full object-cover"
           />
         ) : (
-          <Mic size={20} className="text-gris-cendre" />
+          <img src="/logo.png" alt="ThinkAloud" className="w-full h-full object-cover opacity-40" />
         )}
       </div>
 

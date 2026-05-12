@@ -49,11 +49,40 @@ export default function CoverEditor({ episode, type }: CoverEditorProps) {
     canvas.add(bg);
     canvas.sendObjectToBack(bg);
 
+    // Charge le logo comme élément de départ (déplaçable/redimensionnable)
+    FabricImage.fromURL("/logo.png").then((img) => {
+      if (type === "cover") {
+        const logoSize = CANVAS_W[type] * 0.35;
+        img.scaleToWidth(logoSize);
+        img.set({
+          left: CANVAS_W[type] / 2,
+          top: CANVAS_H[type] * 0.35,
+          originX: "center",
+          originY: "center",
+          opacity: 0.9,
+        });
+      } else {
+        const logoSize = CANVAS_H[type] * 0.55;
+        img.scaleToHeight(logoSize);
+        img.set({
+          left: CANVAS_W[type] * 0.12,
+          top: CANVAS_H[type] / 2,
+          originX: "center",
+          originY: "center",
+          opacity: 0.9,
+        });
+      }
+      canvas.add(img);
+      canvas.sendObjectToBack(img);
+      canvas.sendObjectToBack(bg);
+      canvas.renderAll();
+    });
+
     const titleText = new FabricText(episode.title || "Sans titre", {
       left: CANVAS_W[type] / 2,
-      top: CANVAS_H[type] / 2,
+      top: type === "cover" ? CANVAS_H[type] * 0.7 : CANVAS_H[type] / 2,
       fontFamily: "Playfair Display",
-      fontSize: type === "cover" ? 28 : 22,
+      fontSize: type === "cover" ? 26 : 20,
       fill: "#FAFAFA",
       originX: "center",
       originY: "center",
@@ -61,19 +90,17 @@ export default function CoverEditor({ episode, type }: CoverEditorProps) {
     });
     canvas.add(titleText);
 
-    if (type === "cover") {
-      const sub = new FabricText("THINKALOUD", {
-        left: CANVAS_W[type] / 2,
-        top: CANVAS_H[type] / 2 + 40,
-        fontFamily: "DM Sans",
-        fontSize: 11,
-        fill: "#C8A96E",
-        originX: "center",
-        originY: "center",
-        charSpacing: 200,
-      });
-      canvas.add(sub);
-    }
+    const sub = new FabricText("THINKALOUD", {
+      left: type === "cover" ? CANVAS_W[type] / 2 : CANVAS_W[type] * 0.62,
+      top: type === "cover" ? CANVAS_H[type] * 0.7 + 36 : CANVAS_H[type] / 2 + 28,
+      fontFamily: "DM Sans",
+      fontSize: type === "cover" ? 10 : 9,
+      fill: "#C8A96E",
+      originX: "center",
+      originY: "center",
+      charSpacing: 250,
+    });
+    canvas.add(sub);
 
     canvas.renderAll();
 

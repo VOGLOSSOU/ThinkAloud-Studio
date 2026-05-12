@@ -6,7 +6,11 @@
       "Bash(npm create *)",
       "Bash(npx create-vite@latest . --template react-ts)",
       "Bash(npm init *)",
-      "Bash(chmod +x /home/nathan-voglossou/ThinkAloudApp/install.sh /home/nathan-voglossou/ThinkAloudApp/start.sh)"
+      "Bash(chmod +x /home/nathan-voglossou/ThinkAloudApp/install.sh /home/nathan-voglossou/ThinkAloudApp/start.sh)",
+      "Bash(mkdir -p /home/nathan-voglossou/ThinkAloudApp/frontend/public)",
+      "Bash(cp /home/nathan-voglossou/ThinkAloudApp/logo-thinkaloud.png /home/nathan-voglossou/ThinkAloudApp/frontend/public/logo.png)",
+      "Bash(cp \"/home/nathan-voglossou/ThinkAloudApp/ChatGPT Image 12 mai 2026, 16_59_05.png\" /home/nathan-voglossou/ThinkAloudApp/frontend/public/banner.png)",
+      "Bash(npm install *)"
     ]
   }
 }

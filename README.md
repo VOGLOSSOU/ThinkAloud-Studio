@@ -1,3 +1,5 @@
+![ThinkAloud Studio](ChatGPT%20Image%2012%20mai%202026%2C%2016_59_05.png)
+
 # THINKALOUD STUDIO
 
 > *"La voix d'abord. Toujours."*

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus, Search, Mic } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import { useEpisodes } from "@/hooks/useEpisodes";
 import { episodesApi } from "@/api/client";
@@ -86,8 +86,8 @@ export default function Episodes() {
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="card flex flex-col items-center justify-center py-16 text-center">
-            <Mic size={32} className="text-gris-studio mb-3" />
+          <div className="card flex flex-col items-center justify-center py-16 text-center gap-3">
+            <img src="/logo.png" alt="ThinkAloud" className="w-14 h-14 rounded-full object-cover opacity-30" />
             <p className="text-gris-cendre font-dm text-sm">
               {search ? "Aucun épisode trouvé." : "Aucun épisode dans cette catégorie."}
             </p>

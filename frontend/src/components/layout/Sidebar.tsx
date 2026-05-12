@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Mic, Library, Settings, Plus } from "lucide-react";
+import { LayoutDashboard, Library, Settings, Plus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { episodesApi } from "@/api/client";
 import toast from "react-hot-toast";
@@ -27,10 +27,12 @@ export default function Sidebar() {
   return (
     <aside className="w-16 lg:w-56 flex flex-col h-full bg-noir border-r border-gris-studio flex-shrink-0">
       <div className="px-3 lg:px-4 py-5 border-b border-gris-studio">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-or flex items-center justify-center flex-shrink-0">
-            <Mic size={14} className="text-noir" />
-          </div>
+        <div className="flex items-center gap-3">
+          <img
+            src="/logo.png"
+            alt="ThinkAloud"
+            className="w-9 h-9 rounded-full object-cover flex-shrink-0 ring-1 ring-or/30"
+          />
           <span className="hidden lg:block font-playfair text-blanc-brume font-semibold text-sm tracking-wide">
             ThinkAloud
           </span>
