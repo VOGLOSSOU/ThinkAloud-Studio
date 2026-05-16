@@ -28,7 +28,6 @@ def export_audio(
     exports_dir.mkdir(parents=True, exist_ok=True)
     spec = FFMPEG_FORMATS[fmt]
     out_path = exports_dir / f"audio.{spec['ext']}"
-
     use_music = music_path and music_path.exists()
 
     if use_music:

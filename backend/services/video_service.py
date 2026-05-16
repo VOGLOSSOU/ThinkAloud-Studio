@@ -18,7 +18,6 @@ def generate_youtube_video(
 
     exports_dir.mkdir(parents=True, exist_ok=True)
     out_path = exports_dir / "video.mp4"
-
     use_music = music_path and music_path.exists()
 
     if use_music:
@@ -29,8 +28,7 @@ def generate_youtube_video(
             "-stream_loop", "-1", "-i", str(music_path),
             "-filter_complex",
             f"[2:a]volume={music_volume}[music];[1:a][music]amix=inputs=2:duration=first:dropout_transition=3:normalize=0[audio]",
-            "-map", "0:v",
-            "-map", "[audio]",
+            "-map", "0:v", "-map", "[audio]",
         ]
     else:
         cmd = [

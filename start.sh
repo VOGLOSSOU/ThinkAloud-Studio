@@ -18,6 +18,15 @@ trap cleanup SIGINT SIGTERM
 
 echo -e "${CYAN}Démarrage de ThinkAloud Studio...${NC}"
 
+# Auto-configuration du micro sans fil USB si branché
+USB_MIC=$(pactl list sources short 2>/dev/null | grep -i usb | awk '{print $2}' | head -1)
+if [ -n "$USB_MIC" ]; then
+  pactl set-default-source "$USB_MIC" 2>/dev/null || true
+  echo -e "${GREEN}→ Micro USB détecté et configuré : $USB_MIC${NC}"
+else
+  echo -e "→ Aucun micro USB détecté, micro système utilisé."
+fi
+
 echo -e "${GREEN}→ Backend API (port 8000)${NC}"
 cd "$SCRIPT_DIR/backend"
 source venv/bin/activate
